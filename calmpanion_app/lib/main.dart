@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'screens/splash_screen.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 
@@ -18,11 +19,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF6B4EFF)),
         useMaterial3: true,
       ),
-      initialRoute: '/',
-      routes: {
-        '/': (context) => const SplashScreen(),
-        '/home': (context) => const MyHomePage(title: 'Calmpanion'),
-      },
+      home: const SplashScreen(),
     );
   }
 }
