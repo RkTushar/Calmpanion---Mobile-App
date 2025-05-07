@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/chat_service.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({Key? key}) : super(key: key);
@@ -11,7 +12,8 @@ class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final List<ChatMessage> _messages = [];
   final ScrollController _scrollController = ScrollController();
-  List<String> _suggestedResponses = [];
+  final ChatService _chatService = ChatService();
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -25,58 +27,9 @@ class _ChatScreenState extends State<ChatScreen> {
         timestamp: DateTime.now(),
       ),
     );
-    // Add initial suggested responses
-    _updateSuggestedResponses("greeting");
   }
 
-  void _updateSuggestedResponses(String tag) {
-    // Find matching intent and update suggested responses
-    final intent = _findIntent(tag);
-    if (intent != null) {
-      setState(() {
-        _suggestedResponses = intent['responses'] as List<String>;
-      });
-    }
-  }
-
-  Map<String, dynamic>? _findIntent(String tag) {
-    // This is a simplified version - in a real app, you'd want to load this from a file
-    final intents = [
-      {
-        "tag": "greeting",
-        "patterns": ["Hi", "Hey", "Hello"],
-        "responses": [
-          "I'm feeling down",
-          "I'm anxious",
-          "I need someone to talk to"
-        ]
-      },
-      {
-        "tag": "sad",
-        "patterns": ["I'm feeling down", "I'm sad"],
-        "responses": [
-          "Why do you feel this way?",
-          "How long have you felt like this?",
-          "Would you like to talk about it?"
-        ]
-      },
-      // Add more intents as needed
-    ];
-
-    return intents.firstWhere(
-      (intent) => intent['tag'] == tag,
-      orElse: () => {
-        "tag": "default",
-        "responses": [
-          "Tell me more",
-          "I understand",
-          "How does that make you feel?"
-        ]
-      },
-    );
-  }
-
-  void _handleSubmitted(String text) {
+  Future<void> _handleSubmitted(String text) async {
     if (text.trim().isEmpty) return;
 
     _messageController.clear();
@@ -88,24 +41,34 @@ class _ChatScreenState extends State<ChatScreen> {
           timestamp: DateTime.now(),
         ),
       );
+      _isLoading = true;
     });
 
-    // Simulate bot response
-    Future.delayed(const Duration(seconds: 1), () {
+    try {
+      final response = await _chatService.sendMessage(text);
       setState(() {
         _messages.add(
           ChatMessage(
-            text:
-                "I'm here to listen and support you. Would you like to talk about what's on your mind?",
+            text: response['response'] ??
+                'I apologize, but I could not process your message.',
             isUser: false,
             timestamp: DateTime.now(),
           ),
         );
+        _isLoading = false;
       });
-      _updateSuggestedResponses(
-          "sad"); // Update suggested responses based on context
-      _scrollToBottom();
-    });
+    } catch (e) {
+      setState(() {
+        _messages.add(
+          ChatMessage(
+            text: 'Sorry, I encountered an error. Please try again.',
+            isUser: false,
+            timestamp: DateTime.now(),
+          ),
+        );
+        _isLoading = false;
+      });
+    }
 
     _scrollToBottom();
   }
@@ -171,7 +134,60 @@ class _ChatScreenState extends State<ChatScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.more_vert, color: Color(0xFF2D3436)),
-            onPressed: () {},
+            onPressed: () {
+              // Show options menu
+              showModalBottomSheet(
+                context: context,
+                builder: (context) => Container(
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ListTile(
+                        leading: const Icon(Icons.delete_outline),
+                        title: const Text('Clear Chat'),
+                        onTap: () {
+                          setState(() {
+                            _messages.clear();
+                            _messages.add(
+                              ChatMessage(
+                                text:
+                                    "Hello! I'm Calmpanion, your mental health companion. How can I help you today?",
+                                isUser: false,
+                                timestamp: DateTime.now(),
+                              ),
+                            );
+                          });
+                          Navigator.pop(context);
+                        },
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.info_outline),
+                        title: const Text('About'),
+                        onTap: () {
+                          Navigator.pop(context);
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('About Calmpanion'),
+                              content: const Text(
+                                'Calmpanion is your AI-powered mental health companion, designed to provide support and guidance through conversation.',
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text('Close'),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -181,42 +197,25 @@ class _ChatScreenState extends State<ChatScreen> {
             child: ListView.builder(
               controller: _scrollController,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              itemCount: _messages.length,
+              itemCount: _messages.length + (_isLoading ? 1 : 0),
               itemBuilder: (context, index) {
+                if (index == _messages.length) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        SizedBox(width: 40),
+                        _TypingIndicator(),
+                      ],
+                    ),
+                  );
+                }
                 final message = _messages[index];
                 return MessageBubble(message: message);
               },
             ),
           ),
-          // Suggested responses
-          if (_suggestedResponses.isNotEmpty)
-            Container(
-              height: 100,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: _suggestedResponses.length,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: ElevatedButton(
-                      onPressed: () =>
-                          _handleSubmitted(_suggestedResponses[index]),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            const Color(0xFF98D8C8).withOpacity(0.1),
-                        foregroundColor: const Color(0xFF2D3436),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                      ),
-                      child: Text(_suggestedResponses[index]),
-                    ),
-                  );
-                },
-              ),
-            ),
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
@@ -384,6 +383,83 @@ class MessageBubble extends StatelessWidget {
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+class _TypingIndicator extends StatefulWidget {
+  const _TypingIndicator({Key? key}) : super(key: key);
+
+  @override
+  _TypingIndicatorState createState() => _TypingIndicatorState();
+}
+
+class _TypingIndicatorState extends State<_TypingIndicator>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late List<Animation<double>> _animations;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat();
+
+    _animations = List.generate(3, (index) {
+      final delay = index * 0.2;
+      return Tween<double>(begin: 0.0, end: 1.0).animate(
+        CurvedAnimation(
+          parent: _controller,
+          curve: Interval(delay, delay + 0.5, curve: Curves.easeInOut),
+        ),
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 5,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: List.generate(3, (index) {
+          return AnimatedBuilder(
+            animation: _animations[index],
+            builder: (context, child) {
+              return Container(
+                width: 8,
+                height: 8,
+                margin: const EdgeInsets.symmetric(horizontal: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF98D8C8).withOpacity(
+                    0.3 + (_animations[index].value * 0.7),
+                  ),
+                  shape: BoxShape.circle,
+                ),
+              );
+            },
+          );
+        }),
       ),
     );
   }
