@@ -59,69 +59,93 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AnimatedBuilder(
-              animation: _controller,
-              builder: (context, child) {
-                return Opacity(
-                  opacity: _fadeAnimation.value,
-                  child: Transform.scale(
-                    scale: _scaleAnimation.value,
-                    child: Column(
-                      children: [
-                        const Text(
-                          'Calmpanion',
-                          style: TextStyle(
-                            fontSize: 42,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF6B4EFF),
-                          ),
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/splash_bg.jpg'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Container(
+          color: Colors.black
+              .withOpacity(0.4), // Overlay to make text more readable
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                AnimatedBuilder(
+                  animation: _controller,
+                  builder: (context, child) {
+                    return Opacity(
+                      opacity: _fadeAnimation.value,
+                      child: Transform.scale(
+                        scale: _scaleAnimation.value,
+                        child: Column(
+                          children: [
+                            Image.asset(
+                              'assets/images/calmpanion_logo.png',
+                              width: 150,
+                              height: 150,
+                            ),
+                            const SizedBox(height: 24),
+                            const Text(
+                              'Calmpanion',
+                              style: TextStyle(
+                                fontSize: 42,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                shadows: [
+                                  Shadow(
+                                    offset: Offset(2, 2),
+                                    blurRadius: 4,
+                                    color: Colors.black45,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            const Text(
+                              'Your soul buddy and best companion\nfor your mental health',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.white,
+                                shadows: [
+                                  Shadow(
+                                    offset: Offset(1, 1),
+                                    blurRadius: 2,
+                                    color: Colors.black45,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 16),
-                        const Text(
-                          'Your soul buddy and best companion\nfor your mental health',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Color(0xFF666666),
-                          ),
-                        ),
-                        const SizedBox(height: 40),
-                        Container(
-                          width: 120,
-                          height: 120,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF6B4EFF).withOpacity(0.1),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.psychology_alt,
-                            size: 60,
-                            color: Color(0xFF6B4EFF),
-                          ),
+                      ),
+                    );
+                  },
+                ),
+                const Spacer(),
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 24),
+                  child: Text(
+                    'Created by Rk Tushar',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white,
+                      shadows: [
+                        Shadow(
+                          offset: Offset(1, 1),
+                          blurRadius: 2,
+                          color: Colors.black45,
                         ),
                       ],
                     ),
                   ),
-                );
-              },
-            ),
-            const Spacer(),
-            const Padding(
-              padding: EdgeInsets.only(bottom: 24),
-              child: Text(
-                'Created by Rk Tushar',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFF666666),
                 ),
-              ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
