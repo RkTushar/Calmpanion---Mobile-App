@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import '../main.dart';
+import 'chat_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -84,8 +84,7 @@ class _SplashScreenState extends State<SplashScreen>
     // Navigate to main screen after loading is complete
     if (mounted) {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-            builder: (context) => const MyHomePage(title: 'Calmpanion')),
+        MaterialPageRoute(builder: (context) => const ChatScreen()),
       );
     }
   }
