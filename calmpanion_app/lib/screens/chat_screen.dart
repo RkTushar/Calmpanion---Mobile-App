@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/chat_service.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'dart:ui';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({Key? key}) : super(key: key);
@@ -8,25 +10,42 @@ class ChatScreen extends StatefulWidget {
   State<ChatScreen> createState() => _ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
+class _ChatScreenState extends State<ChatScreen>
+    with SingleTickerProviderStateMixin {
   final TextEditingController _messageController = TextEditingController();
   final List<ChatMessage> _messages = [];
   final ScrollController _scrollController = ScrollController();
   final ChatService _chatService = ChatService();
   bool _isLoading = false;
+  bool _showQuickPrompts = true;
+  late AnimationController _animationController;
+  final List<String> _quickPrompts = [
+    "I'm feeling anxious today",
+    "How can I improve my sleep?",
+    "Help me with stress management",
+    "I need motivation"
+  ];
 
   @override
   void initState() {
     super.initState();
-    // Add welcome message
+    _animationController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(reverse: true);
+
     _messages.add(
       ChatMessage(
         text:
-            "Hello! I'm Calmpanion, your mental health companion. How can I help you today?",
+            "Hello! I'm Calmpanion, your mental health companion. How are you feeling today?",
         isUser: false,
         timestamp: DateTime.now(),
+        hasBeenRead: true,
       ),
     );
+
+    // Add a short delay before animating to the bottom
+    Future.delayed(const Duration(milliseconds: 500), _scrollToBottom);
   }
 
   Future<void> _handleSubmitted(String text) async {
@@ -34,17 +53,24 @@ class _ChatScreenState extends State<ChatScreen> {
 
     _messageController.clear();
     setState(() {
+      _showQuickPrompts = false;
       _messages.add(
         ChatMessage(
           text: text,
           isUser: true,
           timestamp: DateTime.now(),
+          hasBeenRead: true,
         ),
       );
       _isLoading = true;
     });
 
+    _scrollToBottom();
+
     try {
+      // Simulate network delay for better UX
+      await Future.delayed(const Duration(milliseconds: 800));
+
       final response = await _chatService.sendMessage(text);
       setState(() {
         _messages.add(
@@ -53,9 +79,24 @@ class _ChatScreenState extends State<ChatScreen> {
                 'I apologize, but I could not process your message.',
             isUser: false,
             timestamp: DateTime.now(),
+            hasBeenRead: false,
           ),
         );
         _isLoading = false;
+      });
+
+      // Mark the message as read after a short delay
+      Future.delayed(const Duration(seconds: 1), () {
+        if (mounted) {
+          setState(() {
+            _messages.last = ChatMessage(
+              text: _messages.last.text,
+              isUser: false,
+              timestamp: _messages.last.timestamp,
+              hasBeenRead: true,
+            );
+          });
+        }
       });
     } catch (e) {
       setState(() {
@@ -64,6 +105,7 @@ class _ChatScreenState extends State<ChatScreen> {
             text: 'Sorry, I encountered an error. Please try again.',
             isUser: false,
             timestamp: DateTime.now(),
+            hasBeenRead: true,
           ),
         );
         _isLoading = false;
@@ -85,105 +127,318 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
+  String _getFormattedTime(DateTime time) {
+    final hour = time.hour > 12
+        ? time.hour - 12
+        : time.hour == 0
+            ? 12
+            : time.hour;
+    final minute = time.minute.toString().padLeft(2, '0');
+    final period = time.hour >= 12 ? 'PM' : 'AM';
+    return '$hour:$minute $period';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
         title: Row(
           children: [
             Container(
-              width: 40,
-              height: 40,
+              width: 42,
+              height: 42,
               decoration: BoxDecoration(
-                color: const Color(0xFF98D8C8).withOpacity(0.2),
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFF5E8BFF),
+                    const Color(0xFF83ADFF),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF5E8BFF).withOpacity(0.25),
+                    blurRadius: 12,
+                    spreadRadius: 4,
+                  ),
+                ],
               ),
-              child: const Icon(
-                Icons.psychology_alt,
-                color: Color(0xFF98D8C8),
-                size: 24,
+              child: AnimatedBuilder(
+                animation: _animationController,
+                builder: (context, child) {
+                  return CustomPaint(
+                    painter: PulsePainter(
+                      color: const Color(0xFF5E8BFF),
+                      animationValue: _animationController.value,
+                    ),
+                    child: const Center(
+                      child: Icon(
+                        Icons.psychology_alt,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
             const SizedBox(width: 12),
-            const Column(
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Calmpanion',
-                  style: TextStyle(
-                    color: Color(0xFF2D3436),
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFF262F38),
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                Text(
-                  'Online',
-                  style: TextStyle(
-                    color: Color(0xFF98D8C8),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
+                Row(
+                  children: [
+                    AnimatedBuilder(
+                      animation: _animationController,
+                      builder: (context, child) {
+                        return Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF4BD37B),
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF4BD37B).withOpacity(
+                                    0.3 + 0.2 * _animationController.value),
+                                blurRadius: 4 + 2 * _animationController.value,
+                                spreadRadius: 1,
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Available Now',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFF4BD37B),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ],
         ),
+        centerTitle: false,
         actions: [
           IconButton(
-            icon: const Icon(Icons.more_vert, color: Color(0xFF2D3436)),
+            icon: const Icon(Icons.more_horiz, color: Color(0xFF262F38)),
             onPressed: () {
-              // Show options menu
               showModalBottomSheet(
                 context: context,
-                builder: (context) => Container(
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ListTile(
-                        leading: const Icon(Icons.delete_outline),
-                        title: const Text('Clear Chat'),
-                        onTap: () {
-                          setState(() {
-                            _messages.clear();
-                            _messages.add(
-                              ChatMessage(
-                                text:
-                                    "Hello! I'm Calmpanion, your mental health companion. How can I help you today?",
-                                isUser: false,
-                                timestamp: DateTime.now(),
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (context) => BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius:
+                          BorderRadius.vertical(top: Radius.circular(28)),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 4,
+                          margin: const EdgeInsets.only(bottom: 24),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                        ListTile(
+                          leading: Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF5E8BFF).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(Icons.nightlight_outlined,
+                                color: Color(0xFF5E8BFF)),
+                          ),
+                          title: Text(
+                            'Night Mode',
+                            style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.w500,
+                              fontSize: 16,
+                            ),
+                          ),
+                          trailing: Switch(
+                            value: false,
+                            activeColor: const Color(0xFF5E8BFF),
+                            onChanged: (value) {
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        ListTile(
+                          leading: Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF5E8BFF).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(Icons.delete_outline,
+                                color: Color(0xFF5E8BFF)),
+                          ),
+                          title: Text(
+                            'Clear Chat',
+                            style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.w500,
+                              fontSize: 16,
+                            ),
+                          ),
+                          onTap: () {
+                            setState(() {
+                              _messages.clear();
+                              _messages.add(
+                                ChatMessage(
+                                  text:
+                                      "Hello! I'm Calmpanion, your mental health companion. How are you feeling today?",
+                                  isUser: false,
+                                  timestamp: DateTime.now(),
+                                  hasBeenRead: true,
+                                ),
+                              );
+                              _showQuickPrompts = true;
+                            });
+                            Navigator.pop(context);
+                          },
+                        ),
+                        const SizedBox(height: 8),
+                        ListTile(
+                          leading: Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF5E8BFF).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(Icons.info_outline,
+                                color: Color(0xFF5E8BFF)),
+                          ),
+                          title: Text(
+                            'About',
+                            style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.w500,
+                              fontSize: 16,
+                            ),
+                          ),
+                          onTap: () {
+                            Navigator.pop(context);
+                            showDialog(
+                              context: context,
+                              builder: (context) => BackdropFilter(
+                                filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                                child: Dialog(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(24),
+                                  ),
+                                  elevation: 0,
+                                  backgroundColor: Colors.white,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(24.0),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Container(
+                                          width: 64,
+                                          height: 64,
+                                          decoration: BoxDecoration(
+                                            gradient: LinearGradient(
+                                              colors: [
+                                                const Color(0xFF5E8BFF),
+                                                const Color(0xFF83ADFF),
+                                              ],
+                                              begin: Alignment.topLeft,
+                                              end: Alignment.bottomRight,
+                                            ),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Icon(
+                                            Icons.psychology_alt,
+                                            color: Colors.white,
+                                            size: 32,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          'About Calmpanion',
+                                          style: GoogleFonts.outfit(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 20,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 12),
+                                        Text(
+                                          'Calmpanion is your AI-powered mental health companion, designed to provide support, guidance, and coping strategies through meaningful conversation.',
+                                          textAlign: TextAlign.center,
+                                          style: GoogleFonts.outfit(
+                                            fontSize: 15,
+                                            color: const Color(0xFF545D69),
+                                            height: 1.5,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 24),
+                                        ElevatedButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor:
+                                                const Color(0xFF5E8BFF),
+                                            foregroundColor: Colors.white,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(14),
+                                            ),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 24,
+                                              vertical: 12,
+                                            ),
+                                            elevation: 0,
+                                          ),
+                                          child: Text(
+                                            'Close',
+                                            style: GoogleFonts.outfit(
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
                               ),
                             );
-                          });
-                          Navigator.pop(context);
-                        },
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.info_outline),
-                        title: const Text('About'),
-                        onTap: () {
-                          Navigator.pop(context);
-                          showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              title: const Text('About Calmpanion'),
-                              content: const Text(
-                                'Calmpanion is your AI-powered mental health companion, designed to provide support and guidance through conversation.',
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context),
-                                  child: const Text('Close'),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                    ],
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                      ],
+                    ),
                   ),
                 ),
               );
@@ -193,29 +448,123 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
       body: Column(
         children: [
+          // Date indicator
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEEF1F8),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Text(
+              'Today',
+              style: GoogleFonts.outfit(
+                color: const Color(0xFF545D69),
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
           Expanded(
             child: ListView.builder(
               controller: _scrollController,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: _messages.length + (_isLoading ? 1 : 0),
               itemBuilder: (context, index) {
                 if (index == _messages.length) {
                   return const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        SizedBox(width: 40),
-                        _TypingIndicator(),
-                      ],
-                    ),
+                    padding: EdgeInsets.only(left: 16, top: 8, bottom: 16),
+                    child: _TypingIndicator(),
                   );
                 }
+
                 final message = _messages[index];
-                return MessageBubble(message: message);
+                final showTimestamp = index == 0 ||
+                    message.timestamp
+                            .difference(_messages[index - 1].timestamp)
+                            .inMinutes >
+                        5 ||
+                    message.isUser != _messages[index - 1].isUser;
+
+                return Column(
+                  crossAxisAlignment: message.isUser
+                      ? CrossAxisAlignment.end
+                      : CrossAxisAlignment.start,
+                  children: [
+                    if (showTimestamp) ...[
+                      Padding(
+                        padding: EdgeInsets.only(
+                          top: 8,
+                          bottom: 4,
+                          left: message.isUser ? 0 : 48,
+                          right: message.isUser ? 48 : 0,
+                        ),
+                        child: Text(
+                          _getFormattedTime(message.timestamp),
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFF8F99A8),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ),
+                    ],
+                    MessageBubble(message: message),
+                  ],
+                );
               },
             ),
           ),
+
+          // Quick prompts row
+          AnimatedSize(
+            duration: const Duration(milliseconds: 300),
+            child: _showQuickPrompts
+                ? Container(
+                    height: 60,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _quickPrompts.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: GestureDetector(
+                            onTap: () => _handleSubmitted(_quickPrompts[index]),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 10),
+                              margin: const EdgeInsets.symmetric(vertical: 8),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(18),
+                                border:
+                                    Border.all(color: const Color(0xFFE1E5EB)),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.03),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Text(
+                                _quickPrompts[index],
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFF5E8BFF),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  )
+                : const SizedBox(height: 0),
+          ),
+
+          // Chat input area
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
@@ -227,40 +576,100 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
               ],
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: SafeArea(
               child: Row(
                 children: [
+                  // Attachment button
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF2F5FC),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.add,
+                        color: Color(0xFF5E8BFF),
+                      ),
+                      onPressed: () {
+                        // Attachment functionality
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+
+                  // Text input field
                   Expanded(
                     child: Container(
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF5F7FA),
+                        color: const Color(0xFFF2F5FC),
                         borderRadius: BorderRadius.circular(24),
                       ),
                       child: TextField(
                         controller: _messageController,
-                        decoration: const InputDecoration(
-                          hintText: 'Type a message...',
+                        decoration: InputDecoration(
+                          hintText: 'Send a message...',
+                          hintStyle: GoogleFonts.outfit(
+                            color: const Color(0xFF8F99A8),
+                          ),
                           border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(
+                          contentPadding: const EdgeInsets.symmetric(
                             horizontal: 20,
-                            vertical: 10,
+                            vertical: 14,
+                          ),
+                          suffixIcon: IconButton(
+                            icon: const Icon(
+                              Icons.mic_none_rounded,
+                              color: Color(0xFF8F99A8),
+                            ),
+                            onPressed: () {
+                              // Voice input functionality
+                            },
                           ),
                         ),
+                        style: GoogleFonts.outfit(
+                          fontSize: 16,
+                        ),
+                        maxLines: 3,
+                        minLines: 1,
+                        textCapitalization: TextCapitalization.sentences,
                         onSubmitted: _handleSubmitted,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Container(
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF98D8C8),
-                      shape: BoxShape.circle,
-                    ),
-                    child: IconButton(
-                      icon: const Icon(Icons.send, color: Colors.white),
-                      onPressed: () =>
-                          _handleSubmitted(_messageController.text),
+                  const SizedBox(width: 12),
+
+                  // Send button
+                  GestureDetector(
+                    onTap: () => _handleSubmitted(_messageController.text),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            const Color(0xFF5E8BFF),
+                            const Color(0xFF83ADFF),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF5E8BFF).withOpacity(0.3),
+                            blurRadius: 8,
+                            spreadRadius: 0,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.send_rounded,
+                        color: Colors.white,
+                        size: 20,
+                      ),
                     ),
                   ),
                 ],
@@ -276,6 +685,7 @@ class _ChatScreenState extends State<ChatScreen> {
   void dispose() {
     _messageController.dispose();
     _scrollController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 }
@@ -284,11 +694,13 @@ class ChatMessage {
   final String text;
   final bool isUser;
   final DateTime timestamp;
+  final bool hasBeenRead;
 
   ChatMessage({
     required this.text,
     required this.isUser,
     required this.timestamp,
+    required this.hasBeenRead,
   });
 }
 
@@ -303,7 +715,7 @@ class MessageBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         mainAxisAlignment:
             message.isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
@@ -311,75 +723,99 @@ class MessageBubble extends StatelessWidget {
         children: [
           if (!message.isUser) ...[
             Container(
-              width: 32,
-              height: 32,
+              width: 36,
+              height: 36,
+              margin: const EdgeInsets.only(right: 12),
               decoration: BoxDecoration(
-                color: const Color(0xFF98D8C8).withOpacity(0.2),
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFF5E8BFF),
+                    const Color(0xFF83ADFF),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF5E8BFF).withOpacity(0.25),
+                    blurRadius: 10,
+                    spreadRadius: 2,
+                  ),
+                ],
               ),
               child: const Icon(
                 Icons.psychology_alt,
-                color: Color(0xFF98D8C8),
+                color: Colors.white,
                 size: 20,
               ),
             ),
-            const SizedBox(width: 8),
           ],
           Flexible(
             child: Container(
               constraints: BoxConstraints(
-                maxWidth: MediaQuery.of(context).size.width * 0.75,
+                maxWidth: MediaQuery.of(context).size.width * 0.7,
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: message.isUser ? const Color(0xFF98D8C8) : Colors.white,
+                gradient: message.isUser
+                    ? LinearGradient(
+                        colors: [
+                          const Color(0xFF5E8BFF),
+                          const Color(0xFF83ADFF),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      )
+                    : null,
+                color: message.isUser ? null : Colors.white,
                 borderRadius: BorderRadius.circular(20).copyWith(
                   bottomRight: message.isUser
-                      ? const Radius.circular(0)
+                      ? const Radius.circular(4)
                       : const Radius.circular(20),
                   bottomLeft: message.isUser
                       ? const Radius.circular(20)
-                      : const Radius.circular(0),
+                      : const Radius.circular(4),
+                  topRight: const Radius.circular(20),
+                  topLeft: const Radius.circular(20),
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 5,
-                    offset: const Offset(0, 2),
+                    color: (message.isUser
+                            ? const Color(0xFF5E8BFF)
+                            : Colors.black)
+                        .withOpacity(message.isUser ? 0.2 : 0.05),
+                    blurRadius: 8,
+                    spreadRadius: 0,
+                    offset: const Offset(0, 3),
                   ),
                 ],
               ),
               child: Text(
                 message.text,
-                style: TextStyle(
+                style: GoogleFonts.outfit(
                   color:
-                      message.isUser ? Colors.white : const Color(0xFF2D3436),
-                  fontSize: 16,
+                      message.isUser ? Colors.white : const Color(0xFF262F38),
+                  fontSize: 15,
+                  height: 1.4,
                 ),
               ),
             ),
           ),
           if (message.isUser) ...[
-            const SizedBox(width: 8),
             Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 5,
-                    spreadRadius: 0,
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.person,
-                color: Color(0xFF98D8C8),
-                size: 20,
-              ),
+              margin: const EdgeInsets.only(left: 8),
+              child: message.hasBeenRead
+                  ? const Icon(
+                      Icons.done_all,
+                      size: 16,
+                      color: Color(0xFF5E8BFF),
+                    )
+                  : const Icon(
+                      Icons.done,
+                      size: 16,
+                      color: Color(0xFF8F99A8),
+                    ),
             ),
           ],
         ],
@@ -405,15 +841,24 @@ class _TypingIndicatorState extends State<_TypingIndicator>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 1500),
     )..repeat();
 
     _animations = List.generate(3, (index) {
       final delay = index * 0.2;
-      return Tween<double>(begin: 0.0, end: 1.0).animate(
+      return TweenSequence<double>([
+        TweenSequenceItem(
+          tween: Tween<double>(begin: 0.0, end: 1.0),
+          weight: 0.5,
+        ),
+        TweenSequenceItem(
+          tween: Tween<double>(begin: 1.0, end: 0.0),
+          weight: 0.5,
+        ),
+      ]).animate(
         CurvedAnimation(
           parent: _controller,
-          curve: Interval(delay, delay + 0.5, curve: Curves.easeInOut),
+          curve: Interval(delay, delay + 0.7, curve: Curves.easeInOut),
         ),
       );
     });
@@ -427,40 +872,107 @@ class _TypingIndicatorState extends State<_TypingIndicator>
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 5,
-            offset: const Offset(0, 2),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 36,
+          height: 36,
+          margin: const EdgeInsets.only(right: 12),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                const Color(0xFF5E8BFF),
+                const Color(0xFF83ADFF),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF5E8BFF).withOpacity(0.25),
+                blurRadius: 10,
+                spreadRadius: 2,
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: List.generate(3, (index) {
-          return AnimatedBuilder(
-            animation: _animations[index],
-            builder: (context, child) {
-              return Container(
-                width: 8,
-                height: 8,
-                margin: const EdgeInsets.symmetric(horizontal: 2),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF98D8C8).withOpacity(
-                    0.3 + (_animations[index].value * 0.7),
-                  ),
-                  shape: BoxShape.circle,
-                ),
+          child: const Icon(
+            Icons.psychology_alt,
+            color: Colors.white,
+            size: 20,
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20).copyWith(
+              bottomLeft: const Radius.circular(4),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 8,
+                spreadRadius: 0,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: List.generate(3, (index) {
+              return AnimatedBuilder(
+                animation: _animations[index],
+                builder: (context, child) {
+                  return Container(
+                    width: 8,
+                    height: 8,
+                    margin: const EdgeInsets.symmetric(horizontal: 2),
+                    decoration: BoxDecoration(
+                      color: Color.lerp(
+                        const Color(0xFFE1E5EB),
+                        const Color(0xFF5E8BFF),
+                        _animations[index].value,
+                      ),
+                      shape: BoxShape.circle,
+                    ),
+                  );
+                },
               );
-            },
-          );
-        }),
-      ),
+            }),
+          ),
+        ),
+      ],
     );
+  }
+}
+
+class PulsePainter extends CustomPainter {
+  final Color color;
+  final double animationValue;
+
+  PulsePainter({required this.color, required this.animationValue});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final maxRadius = size.width / 1.5;
+
+    final paint = Paint()
+      ..color = color.withOpacity(0.3 * (1 - animationValue))
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0;
+
+    canvas.drawCircle(
+      center,
+      maxRadius * animationValue + size.width / 2.5,
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(PulsePainter oldDelegate) {
+    return oldDelegate.animationValue != animationValue;
   }
 }
