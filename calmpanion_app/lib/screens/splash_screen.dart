@@ -17,8 +17,6 @@ class _SplashScreenState extends State<SplashScreen>
   late Animation<double> _logoScaleAnimation;
   late Animation<double> _backgroundAnimation;
   late Animation<double> _loadingAnimation;
-  bool _isLoading = true;
-  double _loadingProgress = 0.0;
 
   @override
   void initState() {
@@ -81,31 +79,15 @@ class _SplashScreenState extends State<SplashScreen>
 
   Future<void> _simulateLoading() async {
     // Simulate loading tasks
-    await Future.delayed(const Duration(milliseconds: 500));
-    setState(() => _loadingProgress = 0.2);
-
-    await Future.delayed(const Duration(milliseconds: 500));
-    setState(() => _loadingProgress = 0.4);
-
-    await Future.delayed(const Duration(milliseconds: 500));
-    setState(() => _loadingProgress = 0.6);
-
-    await Future.delayed(const Duration(milliseconds: 500));
-    setState(() => _loadingProgress = 0.8);
-
-    await Future.delayed(const Duration(milliseconds: 500));
-    setState(() {
-      _loadingProgress = 1.0;
-      _isLoading = false;
-    });
+    await Future.delayed(const Duration(milliseconds: 2500));
 
     // Navigate to main screen after loading is complete
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const MyHomePage(title: 'Calmpanion'),
-      ),
-    );
+    if (mounted) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+            builder: (context) => const MyHomePage(title: 'Calmpanion')),
+      );
+    }
   }
 
   @override
@@ -159,17 +141,17 @@ class _SplashScreenState extends State<SplashScreen>
                                 width: 150,
                                 height: 150,
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.1),
+                                  color: Colors.white.withOpacity(0.2),
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: Colors.white.withOpacity(0.2),
-                                    width: 1.5,
+                                    color: Colors.white.withOpacity(0.3),
+                                    width: 2,
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
+                                      color: Colors.black.withOpacity(0.2),
                                       blurRadius: 20,
-                                      spreadRadius: 0,
+                                      spreadRadius: 5,
                                     ),
                                   ],
                                 ),
@@ -179,14 +161,14 @@ class _SplashScreenState extends State<SplashScreen>
                                     CustomPaint(
                                       size: Size(120, 120),
                                       painter: BrainCircuitPainter(
-                                        opacity: _logoFadeAnimation.value,
+                                        opacity: _logoFadeAnimation.value * 0.8,
                                       ),
                                     ),
                                     Container(
-                                      width: 50,
-                                      height: 50,
+                                      width: 60,
+                                      height: 60,
                                       decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.15),
+                                        color: Colors.white.withOpacity(0.25),
                                         shape: BoxShape.circle,
                                       ),
                                       child: Stack(
@@ -194,8 +176,9 @@ class _SplashScreenState extends State<SplashScreen>
                                         children: [
                                           Icon(
                                             Icons.psychology_alt,
-                                            size: 30,
-                                            color: Colors.white,
+                                            size: 35,
+                                            color:
+                                                Colors.white.withOpacity(0.9),
                                           ),
                                           Positioned(
                                             right: 0,
@@ -205,10 +188,18 @@ class _SplashScreenState extends State<SplashScreen>
                                               decoration: BoxDecoration(
                                                 color: Colors.white,
                                                 shape: BoxShape.circle,
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.black
+                                                        .withOpacity(0.1),
+                                                    blurRadius: 8,
+                                                    spreadRadius: 0,
+                                                  ),
+                                                ],
                                               ),
                                               child: Icon(
                                                 Icons.chat_bubble_outline,
-                                                size: 12,
+                                                size: 14,
                                                 color: Color(0xFF98D8C8),
                                               ),
                                             ),
