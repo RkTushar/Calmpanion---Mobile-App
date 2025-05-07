@@ -15,6 +15,10 @@ class _SplashScreenState extends State<SplashScreen>
   late Animation<double> _logoFadeAnimation;
   late Animation<double> _textFadeAnimation;
   late Animation<double> _logoScaleAnimation;
+  late Animation<double> _backgroundAnimation;
+  late Animation<double> _loadingAnimation;
+  bool _isLoading = true;
+  double _loadingProgress = 0.0;
 
   @override
   void initState() {
@@ -24,7 +28,13 @@ class _SplashScreenState extends State<SplashScreen>
       vsync: this,
     );
 
-    // Logo fade in and out animation
+    _backgroundAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.3, curve: Curves.easeOut),
+      ),
+    );
+
     _logoFadeAnimation = TweenSequence<double>([
       TweenSequenceItem(
         tween: Tween<double>(begin: 0.0, end: 1.0)
@@ -42,7 +52,6 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     ]).animate(_controller);
 
-    // Logo scale animation
     _logoScaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
@@ -50,7 +59,6 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
 
-    // Text fade animation
     _textFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
@@ -58,16 +66,46 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
 
+    _loadingAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.4, 1.0, curve: Curves.easeInOut),
+      ),
+    );
+
     _controller.forward();
 
-    Timer(const Duration(seconds: 3), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const MyHomePage(title: 'Calmpanion'),
-        ),
-      );
+    // Simulate loading process
+    _simulateLoading();
+  }
+
+  Future<void> _simulateLoading() async {
+    // Simulate loading tasks
+    await Future.delayed(const Duration(milliseconds: 500));
+    setState(() => _loadingProgress = 0.2);
+
+    await Future.delayed(const Duration(milliseconds: 500));
+    setState(() => _loadingProgress = 0.4);
+
+    await Future.delayed(const Duration(milliseconds: 500));
+    setState(() => _loadingProgress = 0.6);
+
+    await Future.delayed(const Duration(milliseconds: 500));
+    setState(() => _loadingProgress = 0.8);
+
+    await Future.delayed(const Duration(milliseconds: 500));
+    setState(() {
+      _loadingProgress = 1.0;
+      _isLoading = false;
     });
+
+    // Navigate to main screen after loading is complete
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const MyHomePage(title: 'Calmpanion'),
+      ),
+    );
   }
 
   @override
@@ -79,218 +117,344 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF98D8C8), // Sea green
-              Color(0xFFB4E4D9), // Light sea green
-              Color(0xFFC5E1D5), // Mint green
-            ],
-          ),
-        ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Logo with fade and scale animations
-              AnimatedBuilder(
-                animation: _controller,
-                builder: (context, child) {
-                  return Opacity(
-                    opacity: _logoFadeAnimation.value,
-                    child: Transform.scale(
-                      scale: _logoScaleAnimation.value,
-                      child: Container(
-                        width: 150,
-                        height: 150,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.15),
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.3),
-                            width: 2,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 20,
-                              spreadRadius: 5,
-                            ),
-                          ],
-                        ),
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            CustomPaint(
-                              size: Size(120, 120),
-                              painter: BrainCircuitPainter(),
-                            ),
-                            Container(
-                              width: 50,
-                              height: 50,
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.psychology_alt,
-                                    size: 30,
-                                    color: Colors.white,
+      body: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          return Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF98D8C8).withOpacity(_backgroundAnimation.value),
+                  Color(0xFFB4E4D9).withOpacity(_backgroundAnimation.value),
+                  Color(0xFFC5E1D5).withOpacity(_backgroundAnimation.value),
+                ],
+              ),
+            ),
+            child: Stack(
+              children: [
+                // Background Pattern
+                Positioned.fill(
+                  child: CustomPaint(
+                    painter: BackgroundPatternPainter(
+                      opacity: _backgroundAnimation.value,
+                    ),
+                  ),
+                ),
+                // Main Content
+                Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Logo with animations
+                      AnimatedBuilder(
+                        animation: _controller,
+                        builder: (context, child) {
+                          return Opacity(
+                            opacity: _logoFadeAnimation.value,
+                            child: Transform.scale(
+                              scale: _logoScaleAnimation.value,
+                              child: Container(
+                                width: 150,
+                                height: 150,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.1),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.2),
+                                    width: 1.5,
                                   ),
-                                  Positioned(
-                                    right: 0,
-                                    bottom: 0,
-                                    child: Container(
-                                      padding: EdgeInsets.all(4),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Icon(
-                                        Icons.chat_bubble_outline,
-                                        size: 12,
-                                        color: Color(0xFF98D8C8),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 20,
+                                      spreadRadius: 0,
+                                    ),
+                                  ],
+                                ),
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    CustomPaint(
+                                      size: Size(120, 120),
+                                      painter: BrainCircuitPainter(
+                                        opacity: _logoFadeAnimation.value,
                                       ),
                                     ),
-                                  ),
-                                ],
+                                    Container(
+                                      width: 50,
+                                      height: 50,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.15),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Stack(
+                                        alignment: Alignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.psychology_alt,
+                                            size: 30,
+                                            color: Colors.white,
+                                          ),
+                                          Positioned(
+                                            right: 0,
+                                            bottom: 0,
+                                            child: Container(
+                                              padding: EdgeInsets.all(4),
+                                              decoration: BoxDecoration(
+                                                color: Colors.white,
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: Icon(
+                                                Icons.chat_bubble_outline,
+                                                size: 12,
+                                                color: Color(0xFF98D8C8),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          ],
-                        ),
+                          );
+                        },
                       ),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 40),
-              // Text with fade animation
-              AnimatedBuilder(
-                animation: _controller,
-                builder: (context, child) {
-                  return Opacity(
-                    opacity: _textFadeAnimation.value,
-                    child: Column(
-                      children: [
-                        ShaderMask(
-                          shaderCallback: (bounds) => LinearGradient(
-                            colors: [
-                              Colors.white,
-                              Colors.white.withOpacity(0.9),
-                            ],
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                          ).createShader(bounds),
-                          child: const Text(
-                            'Calmpanion',
-                            style: TextStyle(
-                              fontSize: 48,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
-                              letterSpacing: 1.5,
-                              shadows: [
-                                Shadow(
-                                  offset: Offset(2, 2),
-                                  blurRadius: 4,
-                                  color: Colors.black26,
+                      const SizedBox(height: 40),
+                      // Text with fade animation
+                      AnimatedBuilder(
+                        animation: _controller,
+                        builder: (context, child) {
+                          return Opacity(
+                            opacity: _textFadeAnimation.value,
+                            child: Column(
+                              children: [
+                                ShaderMask(
+                                  shaderCallback: (bounds) => LinearGradient(
+                                    colors: [
+                                      Colors.white,
+                                      Colors.white.withOpacity(0.95),
+                                    ],
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                  ).createShader(bounds),
+                                  child: const Text(
+                                    'CALMPANION',
+                                    style: TextStyle(
+                                      fontSize: 42,
+                                      fontWeight: FontWeight.w900,
+                                      color: Colors.white,
+                                      letterSpacing: 4,
+                                      height: 1.1,
+                                      shadows: [
+                                        Shadow(
+                                          offset: Offset(0, 2),
+                                          blurRadius: 8,
+                                          color: Colors.black38,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ),
-                                Shadow(
-                                  offset: Offset(-1, -1),
-                                  blurRadius: 2,
-                                  color: Colors.black12,
+                                const SizedBox(height: 24),
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 24, vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.08),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: Colors.white.withOpacity(0.15),
+                                      width: 1,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.05),
+                                        blurRadius: 15,
+                                        spreadRadius: 0,
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Text(
+                                    'Your soul buddy and best companion\nfor your mental health',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w400,
+                                      color: Colors.white,
+                                      height: 1.5,
+                                      letterSpacing: 0.5,
+                                      shadows: [
+                                        Shadow(
+                                          offset: Offset(0, 1),
+                                          blurRadius: 4,
+                                          color: Colors.black26,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(15),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.2),
-                              width: 1,
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 40),
+                      // Loading Dots Animation
+                      AnimatedBuilder(
+                        animation: _controller,
+                        builder: (context, child) {
+                          return Opacity(
+                            opacity: _loadingAnimation.value,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: List.generate(3, (index) {
+                                return TweenAnimationBuilder<double>(
+                                  tween: Tween<double>(
+                                    begin: 0.0,
+                                    end: 1.0,
+                                  ),
+                                  duration: Duration(milliseconds: 600),
+                                  curve: Interval(
+                                    index * 0.2,
+                                    (index * 0.2) + 0.6,
+                                    curve: Curves.easeInOut,
+                                  ),
+                                  builder: (context, value, child) {
+                                    return Container(
+                                      margin:
+                                          EdgeInsets.symmetric(horizontal: 4),
+                                      width: 8,
+                                      height: 8,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white
+                                            .withOpacity(0.3 + (value * 0.7)),
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.white
+                                                .withOpacity(0.2 * value),
+                                            blurRadius: 8,
+                                            spreadRadius: 0,
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                );
+                              }),
                             ),
-                          ),
-                          child: const Text(
-                            'Your soul buddy and best companion\nfor your mental health',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.white,
-                              height: 1.4,
-                              shadows: [
-                                Shadow(
-                                  offset: Offset(1, 1),
-                                  blurRadius: 2,
-                                  color: Colors.black26,
+                          );
+                        },
+                      ),
+                      const Spacer(),
+                      // Creator text
+                      AnimatedBuilder(
+                        animation: _controller,
+                        builder: (context, child) {
+                          return Opacity(
+                            opacity: _textFadeAnimation.value,
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.08),
+                                borderRadius: BorderRadius.circular(30),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.15),
+                                  width: 1,
                                 ),
-                              ],
+                              ),
+                              child: const Text(
+                                'Created by Rk Tushar',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.white,
+                                  letterSpacing: 0.5,
+                                  shadows: [
+                                    Shadow(
+                                      offset: Offset(0, 1),
+                                      blurRadius: 2,
+                                      color: Colors.black26,
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-              const Spacer(),
-              AnimatedBuilder(
-                animation: _controller,
-                builder: (context, child) {
-                  return Opacity(
-                    opacity: _textFadeAnimation.value,
-                    child: Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
+                          );
+                        },
                       ),
-                      child: const Text(
-                        'Created by Rk Tushar',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white,
-                          shadows: [
-                            Shadow(
-                              offset: Offset(1, 1),
-                              blurRadius: 2,
-                              color: Colors.black26,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 24),
-            ],
-          ),
-        ),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
 }
 
-// Custom Painter for Brain Circuit Pattern
-class BrainCircuitPainter extends CustomPainter {
+// Background Pattern Painter
+class BackgroundPatternPainter extends CustomPainter {
+  final double opacity;
+
+  BackgroundPatternPainter({required this.opacity});
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withOpacity(0.5)
+      ..color = Colors.white.withOpacity(0.03 * opacity)
+      ..strokeWidth = 1
+      ..style = PaintingStyle.stroke;
+
+    // Draw grid pattern
+    for (double i = 0; i < size.width; i += 30) {
+      canvas.drawLine(
+        Offset(i, 0),
+        Offset(i, size.height),
+        paint,
+      );
+    }
+
+    for (double i = 0; i < size.height; i += 30) {
+      canvas.drawLine(
+        Offset(0, i),
+        Offset(size.width, i),
+        paint,
+      );
+    }
+
+    // Draw diagonal lines
+    for (double i = -size.height; i < size.width + size.height; i += 60) {
+      canvas.drawLine(
+        Offset(i, 0),
+        Offset(i + size.height, size.height),
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
+
+// Updated Brain Circuit Painter
+class BrainCircuitPainter extends CustomPainter {
+  final double opacity;
+
+  BrainCircuitPainter({required this.opacity});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white.withOpacity(0.5 * opacity)
       ..strokeWidth = 2
       ..style = PaintingStyle.stroke;
 
@@ -353,7 +517,7 @@ class BrainCircuitPainter extends CustomPainter {
 
     // Draw nodes
     final nodePaint = Paint()
-      ..color = Colors.white
+      ..color = Colors.white.withOpacity(opacity)
       ..style = PaintingStyle.fill;
 
     // Draw nodes at circuit points
@@ -376,5 +540,5 @@ class BrainCircuitPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
