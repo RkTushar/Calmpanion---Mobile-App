@@ -792,7 +792,11 @@ class _TypingIndicatorState extends State<_TypingIndicator>
       ]).animate(
         CurvedAnimation(
           parent: _controller,
-          curve: Interval(delay, delay + 0.7, curve: Curves.easeInOut),
+          curve: Interval(
+            delay,
+            delay + 0.6,
+            curve: Curves.easeInOut,
+          ),
         ),
       );
     });
