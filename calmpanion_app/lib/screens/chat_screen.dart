@@ -276,32 +276,6 @@ class _ChatScreenState extends State<ChatScreen>
                               color: const Color(0xFF5E8BFF).withOpacity(0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: const Icon(Icons.nightlight_outlined,
-                                color: Color(0xFF5E8BFF)),
-                          ),
-                          title: Text(
-                            'Night Mode',
-                            style: GoogleFonts.outfit(
-                              fontWeight: FontWeight.w500,
-                              fontSize: 16,
-                            ),
-                          ),
-                          trailing: Switch(
-                            value: false,
-                            activeColor: const Color(0xFF5E8BFF),
-                            onChanged: (value) {
-                              Navigator.pop(context);
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        ListTile(
-                          leading: Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF5E8BFF).withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
                             child: const Icon(Icons.delete_outline,
                                 color: Color(0xFF5E8BFF)),
                           ),
@@ -580,24 +554,6 @@ class _ChatScreenState extends State<ChatScreen>
             child: SafeArea(
               child: Row(
                 children: [
-                  // Attachment button
-                  Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF2F5FC),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.add,
-                        color: Color(0xFF5E8BFF),
-                      ),
-                      onPressed: () {
-                        // Attachment functionality
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-
                   // Text input field
                   Expanded(
                     child: Container(
@@ -616,15 +572,6 @@ class _ChatScreenState extends State<ChatScreen>
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 20,
                             vertical: 14,
-                          ),
-                          suffixIcon: IconButton(
-                            icon: const Icon(
-                              Icons.mic_none_rounded,
-                              color: Color(0xFF8F99A8),
-                            ),
-                            onPressed: () {
-                              // Voice input functionality
-                            },
                           ),
                         ),
                         style: GoogleFonts.outfit(
