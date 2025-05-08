@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../services/chat_service.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'dart:ui';
 
 class ChatScreen extends StatefulWidget {
@@ -44,7 +43,6 @@ class _ChatScreenState extends State<ChatScreen>
       ),
     );
 
-    // Add a short delay before animating to the bottom
     Future.delayed(const Duration(milliseconds: 500), _scrollToBottom);
   }
 
@@ -68,9 +66,7 @@ class _ChatScreenState extends State<ChatScreen>
     _scrollToBottom();
 
     try {
-      // Simulate network delay for better UX
       await Future.delayed(const Duration(milliseconds: 800));
-
       final response = await _chatService.sendMessage(text);
       setState(() {
         _messages.add(
@@ -85,7 +81,6 @@ class _ChatScreenState extends State<ChatScreen>
         _isLoading = false;
       });
 
-      // Mark the message as read after a short delay
       Future.delayed(const Duration(seconds: 1), () {
         if (mounted) {
           setState(() {
@@ -195,7 +190,7 @@ class _ChatScreenState extends State<ChatScreen>
               children: [
                 Text(
                   'Calmpanion',
-                  style: GoogleFonts.outfit(
+                  style: TextStyle(
                     color: const Color(0xFF262F38),
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
@@ -227,7 +222,7 @@ class _ChatScreenState extends State<ChatScreen>
                     const SizedBox(width: 6),
                     Text(
                       'Available Now',
-                      style: GoogleFonts.outfit(
+                      style: TextStyle(
                         color: const Color(0xFF4BD37B),
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
@@ -281,7 +276,7 @@ class _ChatScreenState extends State<ChatScreen>
                           ),
                           title: Text(
                             'Clear Chat',
-                            style: GoogleFonts.outfit(
+                            style: TextStyle(
                               fontWeight: FontWeight.w500,
                               fontSize: 16,
                             ),
@@ -316,7 +311,7 @@ class _ChatScreenState extends State<ChatScreen>
                           ),
                           title: Text(
                             'About',
-                            style: GoogleFonts.outfit(
+                            style: TextStyle(
                               fontWeight: FontWeight.w500,
                               fontSize: 16,
                             ),
@@ -361,7 +356,7 @@ class _ChatScreenState extends State<ChatScreen>
                                         const SizedBox(height: 16),
                                         Text(
                                           'About Calmpanion',
-                                          style: GoogleFonts.outfit(
+                                          style: TextStyle(
                                             fontWeight: FontWeight.w600,
                                             fontSize: 20,
                                           ),
@@ -370,7 +365,7 @@ class _ChatScreenState extends State<ChatScreen>
                                         Text(
                                           'Calmpanion is your AI-powered mental health companion, designed to provide support, guidance, and coping strategies through meaningful conversation.',
                                           textAlign: TextAlign.center,
-                                          style: GoogleFonts.outfit(
+                                          style: TextStyle(
                                             fontSize: 15,
                                             color: const Color(0xFF545D69),
                                             height: 1.5,
@@ -396,7 +391,7 @@ class _ChatScreenState extends State<ChatScreen>
                                           ),
                                           child: Text(
                                             'Close',
-                                            style: GoogleFonts.outfit(
+                                            style: TextStyle(
                                               fontWeight: FontWeight.w500,
                                               fontSize: 16,
                                             ),
@@ -422,7 +417,6 @@ class _ChatScreenState extends State<ChatScreen>
       ),
       body: Column(
         children: [
-          // Date indicator
           Container(
             margin: const EdgeInsets.symmetric(vertical: 16),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -432,7 +426,7 @@ class _ChatScreenState extends State<ChatScreen>
             ),
             child: Text(
               'Today',
-              style: GoogleFonts.outfit(
+              style: TextStyle(
                 color: const Color(0xFF545D69),
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
@@ -475,7 +469,7 @@ class _ChatScreenState extends State<ChatScreen>
                         ),
                         child: Text(
                           _getFormattedTime(message.timestamp),
-                          style: GoogleFonts.outfit(
+                          style: TextStyle(
                             color: const Color(0xFF8F99A8),
                             fontSize: 11,
                             fontWeight: FontWeight.w400,
@@ -489,8 +483,6 @@ class _ChatScreenState extends State<ChatScreen>
               },
             ),
           ),
-
-          // Quick prompts row
           AnimatedSize(
             duration: const Duration(milliseconds: 300),
             child: _showQuickPrompts
@@ -524,7 +516,7 @@ class _ChatScreenState extends State<ChatScreen>
                               ),
                               child: Text(
                                 _quickPrompts[index],
-                                style: GoogleFonts.outfit(
+                                style: TextStyle(
                                   color: const Color(0xFF5E8BFF),
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -537,8 +529,6 @@ class _ChatScreenState extends State<ChatScreen>
                   )
                 : const SizedBox(height: 0),
           ),
-
-          // Chat input area
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
@@ -554,7 +544,6 @@ class _ChatScreenState extends State<ChatScreen>
             child: SafeArea(
               child: Row(
                 children: [
-                  // Text input field
                   Expanded(
                     child: Container(
                       decoration: BoxDecoration(
@@ -565,7 +554,7 @@ class _ChatScreenState extends State<ChatScreen>
                         controller: _messageController,
                         decoration: InputDecoration(
                           hintText: 'Send a message...',
-                          hintStyle: GoogleFonts.outfit(
+                          hintStyle: TextStyle(
                             color: const Color(0xFF8F99A8),
                           ),
                           border: InputBorder.none,
@@ -574,7 +563,7 @@ class _ChatScreenState extends State<ChatScreen>
                             vertical: 14,
                           ),
                         ),
-                        style: GoogleFonts.outfit(
+                        style: TextStyle(
                           fontSize: 16,
                         ),
                         maxLines: 3,
@@ -585,8 +574,6 @@ class _ChatScreenState extends State<ChatScreen>
                     ),
                   ),
                   const SizedBox(width: 12),
-
-                  // Send button
                   GestureDetector(
                     onTap: () => _handleSubmitted(_messageController.text),
                     child: AnimatedContainer(
@@ -740,7 +727,7 @@ class MessageBubble extends StatelessWidget {
               ),
               child: Text(
                 message.text,
-                style: GoogleFonts.outfit(
+                style: TextStyle(
                   color:
                       message.isUser ? Colors.white : const Color(0xFF262F38),
                   fontSize: 15,
