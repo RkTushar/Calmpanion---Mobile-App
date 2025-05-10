@@ -28,18 +28,26 @@ class _ChatScreenState extends State<ChatScreen>
 
   // Theme colors
   Color get _primaryColor =>
-      _isDarkMode ? const Color(0xFF7BA4FF) : const Color(0xFF5E8BFF);
-  Color get _secondaryColor =>
-      _isDarkMode ? const Color(0xFF9BBFFF) : const Color(0xFF83ADFF);
+      _isDarkMode ? Color.fromARGB(255, 63, 222, 183) : const Color(0xFF15B38B);
+  Color get _secondaryColor => _isDarkMode
+      ? Color.fromARGB(255, 63, 222, 183).withOpacity(0.8)
+      : const Color(0xFF15B38B).withOpacity(0.8);
   Color get _backgroundColor =>
-      _isDarkMode ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC);
-  Color get _surfaceColor =>
-      _isDarkMode ? const Color(0xFF2D2D2D) : Colors.white;
-  Color get _textColor => _isDarkMode ? Colors.white : const Color(0xFF262F38);
+      _isDarkMode ? const Color(0xFF0A0A0A) : const Color(0xFFF0F4FF);
+  Color get _surfaceColor => _isDarkMode
+      ? const Color(0xFF1A1A1A).withOpacity(0.8)
+      : Colors.white.withOpacity(0.9);
+  Color get _textColor => _isDarkMode ? Colors.white : const Color(0xFF1A1A1A);
   Color get _secondaryTextColor =>
-      _isDarkMode ? const Color(0xFFB0B0B0) : const Color(0xFF8F99A8);
-  Color get _inputBackgroundColor =>
-      _isDarkMode ? const Color(0xFF3D3D3D) : const Color(0xFFF2F5FC);
+      _isDarkMode ? const Color(0xFFB0B0B0) : const Color(0xFF666666);
+  Color get _inputBackgroundColor => _isDarkMode
+      ? const Color(0xFF2A2A2A).withOpacity(0.8)
+      : const Color(0xFFF0F4FF);
+  Color get _accentColor =>
+      _isDarkMode ? Color.fromARGB(255, 63, 222, 183) : const Color(0xFF15B38B);
+  Color get _neonGlow => _isDarkMode
+      ? Color.fromARGB(255, 63, 222, 183).withOpacity(0.3)
+      : const Color(0xFF15B38B).withOpacity(0.2);
 
   @override
   void initState() {
@@ -159,274 +167,468 @@ class _ChatScreenState extends State<ChatScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _backgroundColor,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: _surfaceColor,
-        scrolledUnderElevation: 0,
-        surfaceTintColor: Colors.transparent,
-        title: Row(
-          children: [
-            Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [_primaryColor, _secondaryColor],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: _primaryColor.withOpacity(0.25),
-                    blurRadius: 12,
-                    spreadRadius: 4,
-                  ),
-                ],
-              ),
-              child: AnimatedBuilder(
-                animation: _animationController,
-                builder: (context, child) {
-                  return CustomPaint(
-                    painter: PulsePainter(
-                      color: _primaryColor,
-                      animationValue: _animationController.value,
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.psychology_alt,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                    ),
-                  );
-                },
+      body: Stack(
+        children: [
+          // Background Pattern
+          Positioned.fill(
+            child: CustomPaint(
+              painter: BackgroundPatternPainter(
+                opacity: _isDarkMode ? 0.1 : 0.05,
+                isDarkMode: _isDarkMode,
               ),
             ),
-            const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Calmpanion',
-                  style: TextStyle(
-                    color: _textColor,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
+          ),
+          // Gradient Background
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: _isDarkMode
+                      ? [
+                          const Color(0xFF1A1A1A),
+                          const Color(0xFF2A2A2A),
+                          const Color(0xFF1A1A1A),
+                        ]
+                      : [
+                          const Color(0xFF98D8C8).withOpacity(0.1),
+                          const Color(0xFFB4E4D9).withOpacity(0.1),
+                          const Color(0xFFC5E1D5).withOpacity(0.1),
+                        ],
+                ),
+              ),
+            ),
+          ),
+          // Main Content
+          Column(
+            children: [
+              AppBar(
+                elevation: 0,
+                backgroundColor: _surfaceColor,
+                scrolledUnderElevation: 0,
+                surfaceTintColor: Colors.transparent,
+                flexibleSpace: ClipRect(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(
+                      color: _surfaceColor,
+                    ),
                   ),
                 ),
-                Row(
+                title: Row(
                   children: [
-                    AnimatedBuilder(
-                      animation: _animationController,
-                      builder: (context, child) {
-                        return Container(
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF4BD37B),
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFF4BD37B).withOpacity(
-                                    0.3 + 0.2 * _animationController.value),
-                                blurRadius: 4 + 2 * _animationController.value,
-                                spreadRadius: 1,
-                              ),
-                            ],
+                    Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [_primaryColor, _secondaryColor],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: _primaryColor.withOpacity(0.25),
+                            blurRadius: 12,
+                            spreadRadius: 4,
                           ),
-                        );
-                      },
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Available Now',
-                      style: TextStyle(
-                        color: const Color(0xFF4BD37B),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
+                        ],
                       ),
+                      child: AnimatedBuilder(
+                        animation: _animationController,
+                        builder: (context, child) {
+                          return CustomPaint(
+                            painter: PulsePainter(
+                              color: _primaryColor,
+                              animationValue: _animationController.value,
+                            ),
+                            child: const Center(
+                              child: Icon(
+                                Icons.psychology_alt,
+                                color: Colors.white,
+                                size: 24,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Calmpanion',
+                          style: TextStyle(
+                            color: _textColor,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            AnimatedBuilder(
+                              animation: _animationController,
+                              builder: (context, child) {
+                                return Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF4BD37B),
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFF4BD37B)
+                                            .withOpacity(0.3 +
+                                                0.2 *
+                                                    _animationController.value),
+                                        blurRadius:
+                                            4 + 2 * _animationController.value,
+                                        spreadRadius: 1,
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Available Now',
+                              style: TextStyle(
+                                color: const Color(0xFF4BD37B),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-          ],
-        ),
-        centerTitle: false,
-        actions: [
-          IconButton(
-            icon: Icon(
-              _isDarkMode ? Icons.light_mode : Icons.dark_mode,
-              color: _textColor,
-            ),
-            onPressed: _toggleTheme,
-          ),
-          IconButton(
-            icon: Icon(Icons.more_horiz, color: _textColor),
-            onPressed: () {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.transparent,
-                builder: (context) => BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: _surfaceColor,
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(28),
-                      ),
+                centerTitle: false,
+                actions: [
+                  IconButton(
+                    icon: Icon(
+                      _isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                      color: _textColor,
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 24),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 40,
-                          height: 4,
-                          margin: const EdgeInsets.only(bottom: 24),
-                          decoration: BoxDecoration(
-                            color: _secondaryTextColor.withOpacity(0.3),
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        ),
-                        ListTile(
-                          leading: Container(
-                            padding: const EdgeInsets.all(10),
+                    onPressed: _toggleTheme,
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.more_horiz, color: _textColor),
+                    onPressed: () {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (context) => BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                          child: Container(
                             decoration: BoxDecoration(
-                              color: _primaryColor.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
+                              color: _surfaceColor,
+                              borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(28),
+                              ),
                             ),
-                            child: Icon(Icons.delete_outline,
-                                color: _primaryColor),
-                          ),
-                          title: Text(
-                            'Clear Chat',
-                            style: TextStyle(
-                              color: _textColor,
-                              fontWeight: FontWeight.w500,
-                              fontSize: 16,
-                            ),
-                          ),
-                          onTap: () {
-                            setState(() {
-                              _messages.clear();
-                              _messages.add(
-                                ChatMessage(
-                                  text:
-                                      "Hello! I'm Calmpanion, your mental health companion. How are you feeling today?",
-                                  isUser: false,
-                                  timestamp: DateTime.now(),
-                                  hasBeenRead: true,
-                                ),
-                              );
-                              _showQuickPrompts = true;
-                            });
-                            Navigator.pop(context);
-                          },
-                        ),
-                        const SizedBox(height: 8),
-                        ListTile(
-                          leading: Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: _primaryColor.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child:
-                                Icon(Icons.info_outline, color: _primaryColor),
-                          ),
-                          title: Text(
-                            'About',
-                            style: TextStyle(
-                              color: _textColor,
-                              fontWeight: FontWeight.w500,
-                              fontSize: 16,
-                            ),
-                          ),
-                          onTap: () {
-                            Navigator.pop(context);
-                            showDialog(
-                              context: context,
-                              builder: (context) => BackdropFilter(
-                                filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                                child: Dialog(
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(24),
+                            padding: const EdgeInsets.symmetric(vertical: 24),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 40,
+                                  height: 4,
+                                  margin: const EdgeInsets.only(bottom: 24),
+                                  decoration: BoxDecoration(
+                                    color: _secondaryTextColor.withOpacity(0.3),
+                                    borderRadius: BorderRadius.circular(2),
                                   ),
-                                  elevation: 0,
-                                  backgroundColor: _surfaceColor,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(24.0),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Container(
-                                          width: 64,
-                                          height: 64,
-                                          decoration: BoxDecoration(
-                                            gradient: LinearGradient(
-                                              colors: [
-                                                _primaryColor,
-                                                _secondaryColor
+                                ),
+                                ListTile(
+                                  leading: Container(
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: _primaryColor.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Icon(Icons.delete_outline,
+                                        color: _primaryColor),
+                                  ),
+                                  title: Text(
+                                    'Clear Chat',
+                                    style: TextStyle(
+                                      color: _textColor,
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  onTap: () {
+                                    setState(() {
+                                      _messages.clear();
+                                      _messages.add(
+                                        ChatMessage(
+                                          text:
+                                              "Hello! I'm Calmpanion, your mental health companion. How are you feeling today?",
+                                          isUser: false,
+                                          timestamp: DateTime.now(),
+                                          hasBeenRead: true,
+                                        ),
+                                      );
+                                      _showQuickPrompts = true;
+                                    });
+                                    Navigator.pop(context);
+                                  },
+                                ),
+                                const SizedBox(height: 8),
+                                ListTile(
+                                  leading: Container(
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: _primaryColor.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Icon(Icons.info_outline,
+                                        color: _primaryColor),
+                                  ),
+                                  title: Text(
+                                    'About',
+                                    style: TextStyle(
+                                      color: _textColor,
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => BackdropFilter(
+                                        filter: ImageFilter.blur(
+                                            sigmaX: 5, sigmaY: 5),
+                                        child: Dialog(
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(24),
+                                          ),
+                                          elevation: 0,
+                                          backgroundColor: _surfaceColor,
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(24.0),
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Container(
+                                                  width: 64,
+                                                  height: 64,
+                                                  decoration: BoxDecoration(
+                                                    gradient: LinearGradient(
+                                                      colors: [
+                                                        _primaryColor,
+                                                        _secondaryColor
+                                                      ],
+                                                      begin: Alignment.topLeft,
+                                                      end:
+                                                          Alignment.bottomRight,
+                                                    ),
+                                                    shape: BoxShape.circle,
+                                                  ),
+                                                  child: const Icon(
+                                                    Icons.psychology_alt,
+                                                    color: Colors.white,
+                                                    size: 32,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 16),
+                                                Text(
+                                                  'About Calmpanion',
+                                                  style: TextStyle(
+                                                    color: _textColor,
+                                                    fontWeight: FontWeight.w600,
+                                                    fontSize: 20,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 12),
+                                                Text(
+                                                  'Calmpanion is your AI-powered mental health companion, designed to provide support, guidance, and coping strategies through meaningful conversation.',
+                                                  textAlign: TextAlign.center,
+                                                  style: TextStyle(
+                                                    fontSize: 15,
+                                                    color: _secondaryTextColor,
+                                                    height: 1.5,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 24),
+                                                ElevatedButton(
+                                                  onPressed: () =>
+                                                      Navigator.pop(context),
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                    backgroundColor:
+                                                        _primaryColor,
+                                                    foregroundColor:
+                                                        Colors.white,
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              14),
+                                                    ),
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                      horizontal: 24,
+                                                      vertical: 12,
+                                                    ),
+                                                    elevation: 0,
+                                                  ),
+                                                  child: Text(
+                                                    'Close',
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      fontSize: 16,
+                                                    ),
+                                                  ),
+                                                ),
                                               ],
-                                              begin: Alignment.topLeft,
-                                              end: Alignment.bottomRight,
-                                            ),
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: const Icon(
-                                            Icons.psychology_alt,
-                                            color: Colors.white,
-                                            size: 32,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 16),
-                                        Text(
-                                          'About Calmpanion',
-                                          style: TextStyle(
-                                            color: _textColor,
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 20,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 12),
-                                        Text(
-                                          'Calmpanion is your AI-powered mental health companion, designed to provide support, guidance, and coping strategies through meaningful conversation.',
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                            fontSize: 15,
-                                            color: _secondaryTextColor,
-                                            height: 1.5,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 24),
-                                        ElevatedButton(
-                                          onPressed: () =>
-                                              Navigator.pop(context),
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: _primaryColor,
-                                            foregroundColor: Colors.white,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(14),
-                                            ),
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 24,
-                                              vertical: 12,
-                                            ),
-                                            elevation: 0,
-                                          ),
-                                          child: Text(
-                                            'Close',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                              fontSize: 16,
                                             ),
                                           ),
                                         ),
-                                      ],
+                                      ),
+                                    );
+                                  },
+                                ),
+                                const SizedBox(height: 12),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+              Container(
+                margin: const EdgeInsets.symmetric(vertical: 16),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: _isDarkMode
+                      ? const Color(0xFF3D3D3D)
+                      : const Color(0xFFEEF1F8),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Text(
+                  'Today',
+                  style: TextStyle(
+                    color: _secondaryTextColor,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: ListView.builder(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: _messages.length + (_isLoading ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    if (index == _messages.length) {
+                      return Padding(
+                        padding:
+                            const EdgeInsets.only(left: 16, top: 8, bottom: 16),
+                        child: _TypingIndicator(
+                          isDarkMode: _isDarkMode,
+                          primaryColor: _primaryColor,
+                          secondaryColor: _secondaryColor,
+                        ),
+                      );
+                    }
+
+                    final message = _messages[index];
+                    final showTimestamp = index == 0 ||
+                        message.timestamp
+                                .difference(_messages[index - 1].timestamp)
+                                .inMinutes >
+                            5 ||
+                        message.isUser != _messages[index - 1].isUser;
+
+                    return Column(
+                      crossAxisAlignment: message.isUser
+                          ? CrossAxisAlignment.end
+                          : CrossAxisAlignment.start,
+                      children: [
+                        if (showTimestamp) ...[
+                          Padding(
+                            padding: EdgeInsets.only(
+                              top: 8,
+                              bottom: 4,
+                              left: message.isUser ? 0 : 48,
+                              right: message.isUser ? 48 : 0,
+                            ),
+                            child: Text(
+                              _getFormattedTime(message.timestamp),
+                              style: TextStyle(
+                                color: _secondaryTextColor,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ),
+                        ],
+                        MessageBubble(
+                          message: message,
+                          isDarkMode: _isDarkMode,
+                          primaryColor: _primaryColor,
+                          secondaryColor: _secondaryColor,
+                          textColor: _textColor,
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+              AnimatedSize(
+                duration: const Duration(milliseconds: 300),
+                child: _showQuickPrompts
+                    ? Container(
+                        height: 60,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: _quickPrompts.length,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: GestureDetector(
+                                onTap: () =>
+                                    _handleSubmitted(_quickPrompts[index]),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 10),
+                                  margin:
+                                      const EdgeInsets.symmetric(vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: _surfaceColor,
+                                    borderRadius: BorderRadius.circular(18),
+                                    border: Border.all(
+                                        color: _isDarkMode
+                                            ? const Color(0xFF4D4D4D)
+                                            : const Color(0xFFE1E5EB)),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.03),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Text(
+                                    _quickPrompts[index],
+                                    style: TextStyle(
+                                      color: _primaryColor,
+                                      fontWeight: FontWeight.w500,
                                     ),
                                   ),
                                 ),
@@ -434,223 +636,90 @@ class _ChatScreenState extends State<ChatScreen>
                             );
                           },
                         ),
-                        const SizedBox(height: 12),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Container(
-            margin: const EdgeInsets.symmetric(vertical: 16),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: _isDarkMode
-                  ? const Color(0xFF3D3D3D)
-                  : const Color(0xFFEEF1F8),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Text(
-              'Today',
-              style: TextStyle(
-                color: _secondaryTextColor,
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
+                      )
+                    : const SizedBox(height: 0),
               ),
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: _messages.length + (_isLoading ? 1 : 0),
-              itemBuilder: (context, index) {
-                if (index == _messages.length) {
-                  return Padding(
-                    padding:
-                        const EdgeInsets.only(left: 16, top: 8, bottom: 16),
-                    child: _TypingIndicator(
-                      isDarkMode: _isDarkMode,
-                      primaryColor: _primaryColor,
-                      secondaryColor: _secondaryColor,
+              Container(
+                decoration: BoxDecoration(
+                  color: _surfaceColor,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, -5),
                     ),
-                  );
-                }
-
-                final message = _messages[index];
-                final showTimestamp = index == 0 ||
-                    message.timestamp
-                            .difference(_messages[index - 1].timestamp)
-                            .inMinutes >
-                        5 ||
-                    message.isUser != _messages[index - 1].isUser;
-
-                return Column(
-                  crossAxisAlignment: message.isUser
-                      ? CrossAxisAlignment.end
-                      : CrossAxisAlignment.start,
-                  children: [
-                    if (showTimestamp) ...[
-                      Padding(
-                        padding: EdgeInsets.only(
-                          top: 8,
-                          bottom: 4,
-                          left: message.isUser ? 0 : 48,
-                          right: message.isUser ? 48 : 0,
+                  ],
+                ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: SafeArea(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: _inputBackgroundColor,
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          child: TextField(
+                            controller: _messageController,
+                            decoration: InputDecoration(
+                              hintText: 'Send a message...',
+                              hintStyle: TextStyle(
+                                color: _secondaryTextColor,
+                              ),
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 14,
+                              ),
+                            ),
+                            style: TextStyle(
+                              color: _textColor,
+                              fontSize: 16,
+                            ),
+                            maxLines: 3,
+                            minLines: 1,
+                            textCapitalization: TextCapitalization.sentences,
+                            onSubmitted: _handleSubmitted,
+                          ),
                         ),
-                        child: Text(
-                          _getFormattedTime(message.timestamp),
-                          style: TextStyle(
-                            color: _secondaryTextColor,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w400,
+                      ),
+                      const SizedBox(width: 12),
+                      GestureDetector(
+                        onTap: () => _handleSubmitted(_messageController.text),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [_primaryColor, _secondaryColor],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(14),
+                            boxShadow: [
+                              BoxShadow(
+                                color: _primaryColor.withOpacity(0.3),
+                                blurRadius: 8,
+                                spreadRadius: 0,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.send_rounded,
+                            color: Colors.white,
+                            size: 20,
                           ),
                         ),
                       ),
                     ],
-                    MessageBubble(
-                      message: message,
-                      isDarkMode: _isDarkMode,
-                      primaryColor: _primaryColor,
-                      secondaryColor: _secondaryColor,
-                      textColor: _textColor,
-                    ),
-                  ],
-                );
-              },
-            ),
-          ),
-          AnimatedSize(
-            duration: const Duration(milliseconds: 300),
-            child: _showQuickPrompts
-                ? Container(
-                    height: 60,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: _quickPrompts.length,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: GestureDetector(
-                            onTap: () => _handleSubmitted(_quickPrompts[index]),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 10),
-                              margin: const EdgeInsets.symmetric(vertical: 8),
-                              decoration: BoxDecoration(
-                                color: _surfaceColor,
-                                borderRadius: BorderRadius.circular(18),
-                                border: Border.all(
-                                    color: _isDarkMode
-                                        ? const Color(0xFF4D4D4D)
-                                        : const Color(0xFFE1E5EB)),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.03),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Text(
-                                _quickPrompts[index],
-                                style: TextStyle(
-                                  color: _primaryColor,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  )
-                : const SizedBox(height: 0),
-          ),
-          Container(
-            decoration: BoxDecoration(
-              color: _surfaceColor,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, -5),
+                  ),
                 ),
-              ],
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: SafeArea(
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: _inputBackgroundColor,
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      child: TextField(
-                        controller: _messageController,
-                        decoration: InputDecoration(
-                          hintText: 'Send a message...',
-                          hintStyle: TextStyle(
-                            color: _secondaryTextColor,
-                          ),
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 14,
-                          ),
-                        ),
-                        style: TextStyle(
-                          color: _textColor,
-                          fontSize: 16,
-                        ),
-                        maxLines: 3,
-                        minLines: 1,
-                        textCapitalization: TextCapitalization.sentences,
-                        onSubmitted: _handleSubmitted,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  GestureDetector(
-                    onTap: () => _handleSubmitted(_messageController.text),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [_primaryColor, _secondaryColor],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(14),
-                        boxShadow: [
-                          BoxShadow(
-                            color: _primaryColor.withOpacity(0.3),
-                            blurRadius: 8,
-                            spreadRadius: 0,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.send_rounded,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                    ),
-                  ),
-                ],
               ),
-            ),
+            ],
           ),
         ],
       ),
@@ -725,10 +794,24 @@ class MessageBubble extends StatelessWidget {
                   ),
                 ],
               ),
-              child: const Icon(
-                Icons.psychology_alt,
-                color: Colors.white,
-                size: 20,
+              child: const Stack(
+                alignment: Alignment.center,
+                children: [
+                  Icon(
+                    Icons.psychology_alt,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                  Positioned(
+                    right: -2,
+                    bottom: -2,
+                    child: Icon(
+                      Icons.auto_awesome,
+                      color: Colors.white,
+                      size: 12,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -886,10 +969,24 @@ class _TypingIndicatorState extends State<_TypingIndicator>
               ),
             ],
           ),
-          child: const Icon(
-            Icons.psychology_alt,
-            color: Colors.white,
-            size: 20,
+          child: const Stack(
+            alignment: Alignment.center,
+            children: [
+              Icon(
+                Icons.psychology_alt,
+                color: Colors.white,
+                size: 20,
+              ),
+              Positioned(
+                right: -2,
+                bottom: -2,
+                child: Icon(
+                  Icons.auto_awesome,
+                  color: Colors.white,
+                  size: 12,
+                ),
+              ),
+            ],
           ),
         ),
         Container(
@@ -966,4 +1063,52 @@ class PulsePainter extends CustomPainter {
   bool shouldRepaint(PulsePainter oldDelegate) {
     return oldDelegate.animationValue != animationValue;
   }
+}
+
+class BackgroundPatternPainter extends CustomPainter {
+  final double opacity;
+  final bool isDarkMode;
+
+  BackgroundPatternPainter({
+    required this.opacity,
+    required this.isDarkMode,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color =
+          (isDarkMode ? Colors.white : Colors.black).withOpacity(0.03 * opacity)
+      ..strokeWidth = 1
+      ..style = PaintingStyle.stroke;
+
+    // Draw grid pattern
+    for (double i = 0; i < size.width; i += 30) {
+      canvas.drawLine(
+        Offset(i, 0),
+        Offset(i, size.height),
+        paint,
+      );
+    }
+
+    for (double i = 0; i < size.height; i += 30) {
+      canvas.drawLine(
+        Offset(0, i),
+        Offset(size.width, i),
+        paint,
+      );
+    }
+
+    // Draw diagonal lines
+    for (double i = -size.height; i < size.width + size.height; i += 60) {
+      canvas.drawLine(
+        Offset(i, 0),
+        Offset(i + size.height, size.height),
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
