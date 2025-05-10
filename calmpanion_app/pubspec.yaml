@@ -16,6 +16,8 @@ dependencies:
   http: ^1.1.0
   flutter_svg: ^2.0.9
   lottie: ^2.7.0
+  get_storage: ^2.1.1
+  get: ^4.6.6
 
 # Development dependencies
 dev_dependencies:

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/chat_service.dart';
 import 'dart:ui';
+import 'meditation_screen.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({Key? key}) : super(key: key);
@@ -68,12 +69,6 @@ class _ChatScreenState extends State<ChatScreen>
     );
 
     Future.delayed(const Duration(milliseconds: 500), _scrollToBottom);
-  }
-
-  void _toggleTheme() {
-    setState(() {
-      _isDarkMode = !_isDarkMode;
-    });
   }
 
   Future<void> _handleSubmitted(String text) async {
@@ -312,10 +307,28 @@ class _ChatScreenState extends State<ChatScreen>
                 actions: [
                   IconButton(
                     icon: Icon(
+                      Icons.self_improvement,
+                      color: _textColor,
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const MeditationScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  IconButton(
+                    icon: Icon(
                       _isDarkMode ? Icons.light_mode : Icons.dark_mode,
                       color: _textColor,
                     ),
-                    onPressed: _toggleTheme,
+                    onPressed: () {
+                      setState(() {
+                        _isDarkMode = !_isDarkMode;
+                      });
+                    },
                   ),
                   IconButton(
                     icon: Icon(Icons.more_horiz, color: _textColor),
