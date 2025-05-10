@@ -17,6 +17,7 @@ class _ChatScreenState extends State<ChatScreen>
   final ChatService _chatService = ChatService();
   bool _isLoading = false;
   bool _showQuickPrompts = true;
+  bool _isDarkMode = false;
   late AnimationController _animationController;
   final List<String> _quickPrompts = [
     "I'm feeling anxious today",
@@ -24,6 +25,21 @@ class _ChatScreenState extends State<ChatScreen>
     "Help me with stress management",
     "I need motivation"
   ];
+
+  // Theme colors
+  Color get _primaryColor =>
+      _isDarkMode ? const Color(0xFF7BA4FF) : const Color(0xFF5E8BFF);
+  Color get _secondaryColor =>
+      _isDarkMode ? const Color(0xFF9BBFFF) : const Color(0xFF83ADFF);
+  Color get _backgroundColor =>
+      _isDarkMode ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC);
+  Color get _surfaceColor =>
+      _isDarkMode ? const Color(0xFF2D2D2D) : Colors.white;
+  Color get _textColor => _isDarkMode ? Colors.white : const Color(0xFF262F38);
+  Color get _secondaryTextColor =>
+      _isDarkMode ? const Color(0xFFB0B0B0) : const Color(0xFF8F99A8);
+  Color get _inputBackgroundColor =>
+      _isDarkMode ? const Color(0xFF3D3D3D) : const Color(0xFFF2F5FC);
 
   @override
   void initState() {
@@ -44,6 +60,12 @@ class _ChatScreenState extends State<ChatScreen>
     );
 
     Future.delayed(const Duration(milliseconds: 500), _scrollToBottom);
+  }
+
+  void _toggleTheme() {
+    setState(() {
+      _isDarkMode = !_isDarkMode;
+    });
   }
 
   Future<void> _handleSubmitted(String text) async {
@@ -136,10 +158,10 @@ class _ChatScreenState extends State<ChatScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: _backgroundColor,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: _surfaceColor,
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         title: Row(
@@ -149,17 +171,14 @@ class _ChatScreenState extends State<ChatScreen>
               height: 42,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [
-                    const Color(0xFF5E8BFF),
-                    const Color(0xFF83ADFF),
-                  ],
+                  colors: [_primaryColor, _secondaryColor],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF5E8BFF).withOpacity(0.25),
+                    color: _primaryColor.withOpacity(0.25),
                     blurRadius: 12,
                     spreadRadius: 4,
                   ),
@@ -170,7 +189,7 @@ class _ChatScreenState extends State<ChatScreen>
                 builder: (context, child) {
                   return CustomPaint(
                     painter: PulsePainter(
-                      color: const Color(0xFF5E8BFF),
+                      color: _primaryColor,
                       animationValue: _animationController.value,
                     ),
                     child: const Center(
@@ -191,7 +210,7 @@ class _ChatScreenState extends State<ChatScreen>
                 Text(
                   'Calmpanion',
                   style: TextStyle(
-                    color: const Color(0xFF262F38),
+                    color: _textColor,
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                   ),
@@ -237,7 +256,14 @@ class _ChatScreenState extends State<ChatScreen>
         centerTitle: false,
         actions: [
           IconButton(
-            icon: const Icon(Icons.more_horiz, color: Color(0xFF262F38)),
+            icon: Icon(
+              _isDarkMode ? Icons.light_mode : Icons.dark_mode,
+              color: _textColor,
+            ),
+            onPressed: _toggleTheme,
+          ),
+          IconButton(
+            icon: Icon(Icons.more_horiz, color: _textColor),
             onPressed: () {
               showModalBottomSheet(
                 context: context,
@@ -246,10 +272,11 @@ class _ChatScreenState extends State<ChatScreen>
                 builder: (context) => BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                   child: Container(
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(28)),
+                    decoration: BoxDecoration(
+                      color: _surfaceColor,
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(28),
+                      ),
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 24),
                     child: Column(
@@ -260,7 +287,7 @@ class _ChatScreenState extends State<ChatScreen>
                           height: 4,
                           margin: const EdgeInsets.only(bottom: 24),
                           decoration: BoxDecoration(
-                            color: Colors.grey.withOpacity(0.3),
+                            color: _secondaryTextColor.withOpacity(0.3),
                             borderRadius: BorderRadius.circular(2),
                           ),
                         ),
@@ -268,15 +295,16 @@ class _ChatScreenState extends State<ChatScreen>
                           leading: Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF5E8BFF).withOpacity(0.1),
+                              color: _primaryColor.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: const Icon(Icons.delete_outline,
-                                color: Color(0xFF5E8BFF)),
+                            child: Icon(Icons.delete_outline,
+                                color: _primaryColor),
                           ),
                           title: Text(
                             'Clear Chat',
                             style: TextStyle(
+                              color: _textColor,
                               fontWeight: FontWeight.w500,
                               fontSize: 16,
                             ),
@@ -303,15 +331,16 @@ class _ChatScreenState extends State<ChatScreen>
                           leading: Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF5E8BFF).withOpacity(0.1),
+                              color: _primaryColor.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: const Icon(Icons.info_outline,
-                                color: Color(0xFF5E8BFF)),
+                            child:
+                                Icon(Icons.info_outline, color: _primaryColor),
                           ),
                           title: Text(
                             'About',
                             style: TextStyle(
+                              color: _textColor,
                               fontWeight: FontWeight.w500,
                               fontSize: 16,
                             ),
@@ -327,7 +356,7 @@ class _ChatScreenState extends State<ChatScreen>
                                     borderRadius: BorderRadius.circular(24),
                                   ),
                                   elevation: 0,
-                                  backgroundColor: Colors.white,
+                                  backgroundColor: _surfaceColor,
                                   child: Padding(
                                     padding: const EdgeInsets.all(24.0),
                                     child: Column(
@@ -339,8 +368,8 @@ class _ChatScreenState extends State<ChatScreen>
                                           decoration: BoxDecoration(
                                             gradient: LinearGradient(
                                               colors: [
-                                                const Color(0xFF5E8BFF),
-                                                const Color(0xFF83ADFF),
+                                                _primaryColor,
+                                                _secondaryColor
                                               ],
                                               begin: Alignment.topLeft,
                                               end: Alignment.bottomRight,
@@ -357,6 +386,7 @@ class _ChatScreenState extends State<ChatScreen>
                                         Text(
                                           'About Calmpanion',
                                           style: TextStyle(
+                                            color: _textColor,
                                             fontWeight: FontWeight.w600,
                                             fontSize: 20,
                                           ),
@@ -367,7 +397,7 @@ class _ChatScreenState extends State<ChatScreen>
                                           textAlign: TextAlign.center,
                                           style: TextStyle(
                                             fontSize: 15,
-                                            color: const Color(0xFF545D69),
+                                            color: _secondaryTextColor,
                                             height: 1.5,
                                           ),
                                         ),
@@ -376,8 +406,7 @@ class _ChatScreenState extends State<ChatScreen>
                                           onPressed: () =>
                                               Navigator.pop(context),
                                           style: ElevatedButton.styleFrom(
-                                            backgroundColor:
-                                                const Color(0xFF5E8BFF),
+                                            backgroundColor: _primaryColor,
                                             foregroundColor: Colors.white,
                                             shape: RoundedRectangleBorder(
                                               borderRadius:
@@ -421,13 +450,15 @@ class _ChatScreenState extends State<ChatScreen>
             margin: const EdgeInsets.symmetric(vertical: 16),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: const Color(0xFFEEF1F8),
+              color: _isDarkMode
+                  ? const Color(0xFF3D3D3D)
+                  : const Color(0xFFEEF1F8),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Text(
               'Today',
               style: TextStyle(
-                color: const Color(0xFF545D69),
+                color: _secondaryTextColor,
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
@@ -440,9 +471,14 @@ class _ChatScreenState extends State<ChatScreen>
               itemCount: _messages.length + (_isLoading ? 1 : 0),
               itemBuilder: (context, index) {
                 if (index == _messages.length) {
-                  return const Padding(
-                    padding: EdgeInsets.only(left: 16, top: 8, bottom: 16),
-                    child: _TypingIndicator(),
+                  return Padding(
+                    padding:
+                        const EdgeInsets.only(left: 16, top: 8, bottom: 16),
+                    child: _TypingIndicator(
+                      isDarkMode: _isDarkMode,
+                      primaryColor: _primaryColor,
+                      secondaryColor: _secondaryColor,
+                    ),
                   );
                 }
 
@@ -470,14 +506,20 @@ class _ChatScreenState extends State<ChatScreen>
                         child: Text(
                           _getFormattedTime(message.timestamp),
                           style: TextStyle(
-                            color: const Color(0xFF8F99A8),
+                            color: _secondaryTextColor,
                             fontSize: 11,
                             fontWeight: FontWeight.w400,
                           ),
                         ),
                       ),
                     ],
-                    MessageBubble(message: message),
+                    MessageBubble(
+                      message: message,
+                      isDarkMode: _isDarkMode,
+                      primaryColor: _primaryColor,
+                      secondaryColor: _secondaryColor,
+                      textColor: _textColor,
+                    ),
                   ],
                 );
               },
@@ -502,10 +544,12 @@ class _ChatScreenState extends State<ChatScreen>
                                   horizontal: 16, vertical: 10),
                               margin: const EdgeInsets.symmetric(vertical: 8),
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: _surfaceColor,
                                 borderRadius: BorderRadius.circular(18),
-                                border:
-                                    Border.all(color: const Color(0xFFE1E5EB)),
+                                border: Border.all(
+                                    color: _isDarkMode
+                                        ? const Color(0xFF4D4D4D)
+                                        : const Color(0xFFE1E5EB)),
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.black.withOpacity(0.03),
@@ -517,7 +561,7 @@ class _ChatScreenState extends State<ChatScreen>
                               child: Text(
                                 _quickPrompts[index],
                                 style: TextStyle(
-                                  color: const Color(0xFF5E8BFF),
+                                  color: _primaryColor,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -531,7 +575,7 @@ class _ChatScreenState extends State<ChatScreen>
           ),
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: _surfaceColor,
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.05),
@@ -547,7 +591,7 @@ class _ChatScreenState extends State<ChatScreen>
                   Expanded(
                     child: Container(
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF2F5FC),
+                        color: _inputBackgroundColor,
                         borderRadius: BorderRadius.circular(24),
                       ),
                       child: TextField(
@@ -555,7 +599,7 @@ class _ChatScreenState extends State<ChatScreen>
                         decoration: InputDecoration(
                           hintText: 'Send a message...',
                           hintStyle: TextStyle(
-                            color: const Color(0xFF8F99A8),
+                            color: _secondaryTextColor,
                           ),
                           border: InputBorder.none,
                           contentPadding: const EdgeInsets.symmetric(
@@ -564,6 +608,7 @@ class _ChatScreenState extends State<ChatScreen>
                           ),
                         ),
                         style: TextStyle(
+                          color: _textColor,
                           fontSize: 16,
                         ),
                         maxLines: 3,
@@ -582,17 +627,14 @@ class _ChatScreenState extends State<ChatScreen>
                       height: 48,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [
-                            const Color(0xFF5E8BFF),
-                            const Color(0xFF83ADFF),
-                          ],
+                          colors: [_primaryColor, _secondaryColor],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
                         borderRadius: BorderRadius.circular(14),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF5E8BFF).withOpacity(0.3),
+                            color: _primaryColor.withOpacity(0.3),
                             blurRadius: 8,
                             spreadRadius: 0,
                             offset: const Offset(0, 3),
@@ -640,10 +682,18 @@ class ChatMessage {
 
 class MessageBubble extends StatelessWidget {
   final ChatMessage message;
+  final bool isDarkMode;
+  final Color primaryColor;
+  final Color secondaryColor;
+  final Color textColor;
 
   const MessageBubble({
     Key? key,
     required this.message,
+    required this.isDarkMode,
+    required this.primaryColor,
+    required this.secondaryColor,
+    required this.textColor,
   }) : super(key: key);
 
   @override
@@ -662,17 +712,14 @@ class MessageBubble extends StatelessWidget {
               margin: const EdgeInsets.only(right: 12),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [
-                    const Color(0xFF5E8BFF),
-                    const Color(0xFF83ADFF),
-                  ],
+                  colors: [primaryColor, secondaryColor],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF5E8BFF).withOpacity(0.25),
+                    color: primaryColor.withOpacity(0.25),
                     blurRadius: 10,
                     spreadRadius: 2,
                   ),
@@ -694,15 +741,14 @@ class MessageBubble extends StatelessWidget {
               decoration: BoxDecoration(
                 gradient: message.isUser
                     ? LinearGradient(
-                        colors: [
-                          const Color(0xFF5E8BFF),
-                          const Color(0xFF83ADFF),
-                        ],
+                        colors: [primaryColor, secondaryColor],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       )
                     : null,
-                color: message.isUser ? null : Colors.white,
+                color: message.isUser
+                    ? null
+                    : (isDarkMode ? const Color(0xFF3D3D3D) : Colors.white),
                 borderRadius: BorderRadius.circular(20).copyWith(
                   bottomRight: message.isUser
                       ? const Radius.circular(4)
@@ -715,9 +761,7 @@ class MessageBubble extends StatelessWidget {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: (message.isUser
-                            ? const Color(0xFF5E8BFF)
-                            : Colors.black)
+                    color: (message.isUser ? primaryColor : Colors.black)
                         .withOpacity(message.isUser ? 0.2 : 0.05),
                     blurRadius: 8,
                     spreadRadius: 0,
@@ -728,8 +772,7 @@ class MessageBubble extends StatelessWidget {
               child: Text(
                 message.text,
                 style: TextStyle(
-                  color:
-                      message.isUser ? Colors.white : const Color(0xFF262F38),
+                  color: message.isUser ? Colors.white : textColor,
                   fontSize: 15,
                   height: 1.4,
                 ),
@@ -740,15 +783,17 @@ class MessageBubble extends StatelessWidget {
             Container(
               margin: const EdgeInsets.only(left: 8),
               child: message.hasBeenRead
-                  ? const Icon(
+                  ? Icon(
                       Icons.done_all,
                       size: 16,
-                      color: Color(0xFF5E8BFF),
+                      color: primaryColor,
                     )
-                  : const Icon(
+                  : Icon(
                       Icons.done,
                       size: 16,
-                      color: Color(0xFF8F99A8),
+                      color: isDarkMode
+                          ? const Color(0xFF666666)
+                          : const Color(0xFF8F99A8),
                     ),
             ),
           ],
@@ -759,7 +804,16 @@ class MessageBubble extends StatelessWidget {
 }
 
 class _TypingIndicator extends StatefulWidget {
-  const _TypingIndicator({Key? key}) : super(key: key);
+  final bool isDarkMode;
+  final Color primaryColor;
+  final Color secondaryColor;
+
+  const _TypingIndicator({
+    Key? key,
+    required this.isDarkMode,
+    required this.primaryColor,
+    required this.secondaryColor,
+  }) : super(key: key);
 
   @override
   _TypingIndicatorState createState() => _TypingIndicatorState();
@@ -819,17 +873,14 @@ class _TypingIndicatorState extends State<_TypingIndicator>
           margin: const EdgeInsets.only(right: 12),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [
-                const Color(0xFF5E8BFF),
-                const Color(0xFF83ADFF),
-              ],
+              colors: [widget.primaryColor, widget.secondaryColor],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF5E8BFF).withOpacity(0.25),
+                color: widget.primaryColor.withOpacity(0.25),
                 blurRadius: 10,
                 spreadRadius: 2,
               ),
@@ -844,7 +895,7 @@ class _TypingIndicatorState extends State<_TypingIndicator>
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: widget.isDarkMode ? const Color(0xFF3D3D3D) : Colors.white,
             borderRadius: BorderRadius.circular(20).copyWith(
               bottomLeft: const Radius.circular(4),
             ),
@@ -869,8 +920,10 @@ class _TypingIndicatorState extends State<_TypingIndicator>
                     margin: const EdgeInsets.symmetric(horizontal: 2),
                     decoration: BoxDecoration(
                       color: Color.lerp(
-                        const Color(0xFFE1E5EB),
-                        const Color(0xFF5E8BFF),
+                        widget.isDarkMode
+                            ? const Color(0xFF666666)
+                            : const Color(0xFFE1E5EB),
+                        widget.primaryColor,
                         _animations[index].value,
                       ),
                       shape: BoxShape.circle,
