@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../services/chat_service.dart';
 import 'dart:ui';
-import 'meditation_screen.dart';
 import 'package:get_storage/get_storage.dart';
+import 'meditation_screen.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({Key? key}) : super(key: key);
