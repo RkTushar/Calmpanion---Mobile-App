@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/chat_service.dart';
 import 'dart:ui';
 import 'meditation_screen.dart';
+import 'package:get_storage/get_storage.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({Key? key}) : super(key: key);
@@ -16,6 +17,8 @@ class _ChatScreenState extends State<ChatScreen>
   final List<ChatMessage> _messages = [];
   final ScrollController _scrollController = ScrollController();
   final ChatService _chatService = ChatService();
+  final _storage = GetStorage();
+  static const String _chatKey = 'chat_messages';
   bool _isLoading = false;
   bool _showQuickPrompts = true;
   bool _isDarkMode = false;
@@ -58,17 +61,50 @@ class _ChatScreenState extends State<ChatScreen>
       vsync: this,
     )..repeat(reverse: true);
 
-    _messages.add(
-      ChatMessage(
-        text:
-            "Hello! I'm Calmpanion, your mental health companion. How are you feeling today?",
-        isUser: false,
-        timestamp: DateTime.now(),
-        hasBeenRead: true,
-      ),
-    );
+    _loadMessages();
+    if (_messages.isEmpty) {
+      _messages.add(
+        ChatMessage(
+          text:
+              "Hello! I'm Calmpanion, your mental health companion. How are you feeling today?",
+          isUser: false,
+          timestamp: DateTime.now(),
+          hasBeenRead: true,
+        ),
+      );
+      _saveMessages();
+    }
 
     Future.delayed(const Duration(milliseconds: 500), _scrollToBottom);
+  }
+
+  void _loadMessages() {
+    final List<dynamic>? savedMessages = _storage.read(_chatKey);
+    if (savedMessages != null) {
+      setState(() {
+        _messages.clear();
+        _messages.addAll(
+          savedMessages.map((msg) => ChatMessage(
+                text: msg['text'],
+                isUser: msg['isUser'],
+                timestamp: DateTime.parse(msg['timestamp']),
+                hasBeenRead: msg['hasBeenRead'] ?? true,
+              )),
+        );
+      });
+    }
+  }
+
+  void _saveMessages() {
+    final List<Map<String, dynamic>> messagesToSave = _messages
+        .map((msg) => {
+              'text': msg.text,
+              'isUser': msg.isUser,
+              'timestamp': msg.timestamp.toIso8601String(),
+              'hasBeenRead': msg.hasBeenRead,
+            })
+        .toList();
+    _storage.write(_chatKey, messagesToSave);
   }
 
   Future<void> _handleSubmitted(String text) async {
@@ -88,6 +124,7 @@ class _ChatScreenState extends State<ChatScreen>
       _isLoading = true;
     });
 
+    _saveMessages();
     _scrollToBottom();
 
     try {
@@ -106,6 +143,8 @@ class _ChatScreenState extends State<ChatScreen>
         _isLoading = false;
       });
 
+      _saveMessages();
+
       Future.delayed(const Duration(seconds: 1), () {
         if (mounted) {
           setState(() {
@@ -115,6 +154,7 @@ class _ChatScreenState extends State<ChatScreen>
               timestamp: _messages.last.timestamp,
               hasBeenRead: true,
             );
+            _saveMessages();
           });
         }
       });
@@ -130,6 +170,7 @@ class _ChatScreenState extends State<ChatScreen>
         );
         _isLoading = false;
       });
+      _saveMessages();
     }
 
     _scrollToBottom();
