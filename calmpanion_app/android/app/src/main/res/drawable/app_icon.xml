@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    
+    <!-- Background Circle -->
+    <path
+        android:fillColor="#4A90E2"
+        android:pathData="M54,54m-48,0a48,48 0,1 1,96 0a48,48 0,1 1,-96 0"/>
+    
+    <!-- Chatbot Head -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,30C42.95,30 34,38.95 34,50C34,61.05 42.95,70 54,70C65.05,70 74,61.05 74,50C74,38.95 65.05,30 54,30ZM54,66C45.16,66 38,58.84 38,50C38,41.16 45.16,34 54,34C62.84,34 70,41.16 70,50C70,58.84 62.84,66 54,66Z"/>
+    
+    <!-- Eyes -->
+    <path
+        android:fillColor="#4A90E2"
+        android:pathData="M48,46m-4,0a4,4 0,1 1,8 0a4,4 0,1 1,-8 0"/>
+    <path
+        android:fillColor="#4A90E2"
+        android:pathData="M60,46m-4,0a4,4 0,1 1,8 0a4,4 0,1 1,-8 0"/>
+    
+    <!-- Smile -->
+    <path
+        android:fillColor="#4A90E2"
+        android:pathData="M54,58C50.13,58 46.5,56.5 44,54C45.5,56.5 49.13,58 54,58C58.87,58 62.5,56.5 64,54C61.5,56.5 57.87,58 54,58Z"/>
+    
+    <!-- Calming Wave -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M30,78C30,78 35,72 54,72C73,72 78,78 78,78V84H30V78Z"
+        android:fillAlpha="0.3"/>
+</vector> 
