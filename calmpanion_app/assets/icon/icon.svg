@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+    <!-- Background Circle -->
+    <circle cx="512" cy="512" r="512" fill="#4A90E2"/>
+    
+    <!-- Chatbot Head -->
+    <circle cx="512" cy="512" r="380" fill="#FFFFFF"/>
+    
+    <!-- Eyes -->
+    <circle cx="448" cy="448" r="40" fill="#4A90E2"/>
+    <circle cx="576" cy="448" r="40" fill="#4A90E2"/>
+    
+    <!-- Smile -->
+    <path d="M512,640C448,640 384,576 384,512C448,576 512,640 512,640C512,640 576,576 640,512C576,576 512,640 512,640Z" fill="#4A90E2"/>
+    
+    <!-- Calming Wave -->
+    <path d="M280,780C280,780 320,720 512,720C704,720 744,780 744,780V840H280V780Z" fill="#FFFFFF" fill-opacity="0.3"/>
+</svg> 
